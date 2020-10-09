@@ -5,27 +5,35 @@ using UnityEngine.Rendering;
 public class EnemyMovement : MonoBehaviour
 {
 
-
-    public float speed;
-
-    public Transform target;
+    public Transform target = null;
     public int targetIndex = 0;
-    private Vector3 direction;
+    public float distanceTraveled = 0f;
+    private Vector3 direction = new Vector3(0f,0f,0f);
+    private Enemy enemy;
 
     private void Start()
     {
-        target = Waypoints.waypoints[0];
-
-        direction = (target.position - transform.position).normalized;
+        enemy = gameObject.GetComponent<Enemy>();
+        if (target == null)
+        {
+            target = Waypoints.waypoints[targetIndex];
+        }
     }
     void Update()
     {
-        if (Vector3.Distance(target.position, transform.position) <= 0.1f)
+        if(direction.magnitude < .5f)
+        {
+            GetDirection();
+        }
+        if (Vector3.Distance(target.position, transform.position) <= 0.15f)
         {
             GetNextTarget();
         }
-        transform.Translate(direction * speed * Time.deltaTime, Space.World);
-        
+
+        transform.Translate(direction * enemy.currentSpeed * Time.deltaTime, Space.World);
+        distanceTraveled += enemy.currentSpeed * Time.deltaTime;
+
+
     }
     
     private void GetNextTarget()
@@ -39,10 +47,24 @@ public class EnemyMovement : MonoBehaviour
         targetIndex++;
         target = Waypoints.waypoints[targetIndex];
 
+        GetDirection();
+
     }
 
     private void PathEnded()
     {
+        PlayerStats.Lives -= enemy.enemyLevel;
+        WaveSpawner.enemiesAlive--;
         Destroy(gameObject);
+    }
+
+    private void GetDirection()
+    {
+        direction = (target.position - transform.position).normalized;
+    }
+
+    public void setTarget(Transform target)
+    {
+        this.target = target;
     }
 }
