@@ -10,7 +10,7 @@ public class Drop : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerE
         Debug.Log("OnDrop");
         if(eventData.pointerDrag != null)
         {
-            Destroy(eventData.pointerDrag);
+            //Destroy(eventData.pointerDrag);
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class TurretGeneral : MonoBehaviour
 {
@@ -17,7 +18,14 @@ public class TurretGeneral : MonoBehaviour
     public string enemyTag = "Enemy";
 
     public Transform firePoint;
+    private BuildManager buildManager = BuildManager.instance;
 
+    private Boolean validLocationToBuild = true;
+
+    private Boolean isTowerBuild = false;
+    private int towersInRange = 0;
+
+    public GameObject canvas;
     private void Start()
     {
         InvokeRepeating("UpdateTarget", 0f, .2f);
@@ -36,6 +44,65 @@ public class TurretGeneral : MonoBehaviour
             Shoot();
             fireCountdown = 1 / fireRate;
         }
+    }
+
+
+    private void OnMouseDrag()
+    {
+
+        Vector3 newPosition = new Vector3(1f,1f,1f);
+        //Debug.Log(Input.mousePosition.x);
+
+
+        //Debug.Log(buildManager.MaxPoints.position);
+        Vector3 maxPoints = buildManager.MaxPoints.position;
+        Vector3 minPoints = buildManager.MinPoints.position;
+        Camera camera = buildManager.camera;
+
+        float zPos = 0f;
+        float xPos = 0f;
+
+        if (camera.WorldToScreenPoint(minPoints).x < Input.mousePosition.x)
+        {
+            zPos = minPoints.z;
+        }
+        else if (camera.WorldToScreenPoint(maxPoints).x > Input.mousePosition.x)
+        {
+            zPos = maxPoints.z;
+        }
+        else
+        {
+            float percent = (Input.mousePosition.x - camera.WorldToScreenPoint(maxPoints).x) / (camera.WorldToScreenPoint(minPoints).x - camera.WorldToScreenPoint(maxPoints).x);
+            zPos = percent * (minPoints.z - maxPoints.z) + maxPoints.z;
+        }
+
+        if (camera.WorldToScreenPoint(minPoints).y > Input.mousePosition.y)
+        {
+            xPos = minPoints.x;
+        }
+        else if (camera.WorldToScreenPoint(maxPoints).y < Input.mousePosition.y)
+        {
+            xPos = maxPoints.x;
+        }
+        else
+        {
+            float percent = (Input.mousePosition.y - camera.WorldToScreenPoint(maxPoints).y) / (camera.WorldToScreenPoint(minPoints).y - camera.WorldToScreenPoint(maxPoints).y);
+            xPos = percent * (minPoints.x - maxPoints.x) + maxPoints.x;
+        }
+
+
+
+        transform.position = new Vector3(xPos, gameObject.transform.position.y, zPos);
+    }
+
+    private void OnMouseDown()
+    {
+        Debug.Log("Mouse Clicked");
+    }
+
+    private void OnMouseUp()
+    {
+        Debug.Log(towersInRange);
     }
     void UpdateTarget()
     {
@@ -68,7 +135,7 @@ public class TurretGeneral : MonoBehaviour
 
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
-        partToRotate.rotation = Quaternion.Euler(90f, rotation.y, 0f);
+        partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
     }
 
     void Shoot()
@@ -86,4 +153,29 @@ public class TurretGeneral : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, range);
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Trigger Entered");
+        if (other.tag == "Towers" || other.tag == "Path")
+        {
+            towersInRange++;
+            validLocationToBuild = false;
+
+            canvas.SetActive(true);
+
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if(other.tag == "Towers" || other.tag == "Path")
+        {
+            towersInRange--;
+            if(towersInRange <= 0)
+            {
+                towersInRange = 0;
+                validLocationToBuild = true;
+                canvas.SetActive(false);
+            }
+        }
+    }
 }
