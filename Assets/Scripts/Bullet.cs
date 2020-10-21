@@ -5,7 +5,7 @@ public class Bullet : MonoBehaviour
     public Transform target;
     public float speed = 50f;
     private float explosionRadius = 0f;
-    private int damage = 0;
+    private float damage = 0;
 
     private bool targetSet = false;
 
@@ -72,7 +72,7 @@ public class Bullet : MonoBehaviour
         }
     }
 
-    public void seek(Transform _target, int _damage, float _explosionRadius)
+    public void seek(Transform _target, float _damage, float _explosionRadius)
     {
         target = _target;
         damage = _damage;

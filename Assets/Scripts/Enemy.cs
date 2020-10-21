@@ -1,13 +1,14 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
     public float currentSpeed;
     public Transform target;
-    public int health;
+    public float health;
     public int enemyLevel;
     private float baseSpeed;
-    private int baseHealth;
+    private float baseHealth;
     private bool isDead = false;
 
     private void Start()
@@ -15,16 +16,11 @@ public class Enemy : MonoBehaviour
         baseSpeed = currentSpeed;
         baseHealth = health;
     }
-
-    private void Update()
+    void Update()
     {
-        if(Input.GetKeyDown(KeyCode.I))
-        {
-            takeDamage(75);
-        }
+        currentSpeed = baseSpeed;
     }
-
-    public void takeDamage(int damage)
+    public void takeDamage(float damage)
     {
 
         if (isDead)
@@ -38,12 +34,6 @@ public class Enemy : MonoBehaviour
         else
         {
             health -= damage;
-            if((float)health / (float)baseHealth <= .5f)
-            {
-                baseSpeed = baseSpeed * .65f;
-
-                currentSpeed = baseSpeed;
-            }
         }
     }
 
@@ -54,6 +44,11 @@ public class Enemy : MonoBehaviour
         Destroy(gameObject);
         WaveSpawner.enemiesAlive--;
 
+    }
+
+    public void Slow(float rate)
+    {
+        currentSpeed = baseSpeed * (1 - rate);
     }
 
 }

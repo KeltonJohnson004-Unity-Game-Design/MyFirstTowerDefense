@@ -296,7 +296,7 @@ Transform:
   m_GameObject: {fileID: 7101608550953043578}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 29, y: 1, z: -17}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 6312275681165996305}
   - {fileID: 1055698749207862952}
@@ -324,10 +324,14 @@ MonoBehaviour:
   fireRate: 1
   damage: 50
   explosionRadius: 0
+  slowRate: 0
   partToRotate: {fileID: 7621827752783420608}
   bulletPrefab: {fileID: 1337140400430733726, guid: 04f778a38fabe43488b00b5b6bc69684, type: 3}
   enemyTag: Enemy
   firePoint: {fileID: 7947888556121972873}
+  isPlaced: 0
+  validLocationToBuild: 1
+  doesShoot: 1
   canvas: {fileID: 5048430285038236949}
 --- !u!136 &8347409020880962555
 CapsuleCollider:
@@ -339,7 +343,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 1.5
+  m_Radius: 1
   m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 1.8, z: 0}

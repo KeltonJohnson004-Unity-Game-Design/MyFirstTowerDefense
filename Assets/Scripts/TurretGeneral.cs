@@ -9,8 +9,9 @@ public class TurretGeneral : MonoBehaviour
     public float range;
     public float turnSpeed = 10f;
     public float fireRate = 1f;
-    public int damage = 50;
+    public float damage = 50;
     public float explosionRadius = 0f;
+    public float slowRate = 0f;
     private float fireCountdown = 0f;
 
     public Transform partToRotate;
@@ -18,22 +19,41 @@ public class TurretGeneral : MonoBehaviour
     public string enemyTag = "Enemy";
 
     public Transform firePoint;
+    public Boolean isPlaced = false;
+    public bool validLocationToBuild = true;
+    public bool doesShoot;
     private BuildManager buildManager = BuildManager.instance;
 
-    private Boolean validLocationToBuild = true;
-
-    private Boolean isTowerBuild = false;
     private int towersInRange = 0;
 
     public GameObject canvas;
     private void Start()
     {
-        InvokeRepeating("UpdateTarget", 0f, .2f);
+        if (doesShoot)
+        {
+            InvokeRepeating("UpdateTarget", 0f, .2f);
+        }
+        gameObject.transform.rotation = Quaternion.Euler(0f, 270f, 0);
     }
 
+    public bool getIsValid()
+    {
+        return validLocationToBuild;
+    }
     private void Update()
     {
         fireCountdown -= Time.deltaTime;
+
+        if (!isPlaced)
+        {
+            return;
+        }
+        
+        if (!doesShoot)
+        {
+            SlowEnemies();
+            return;
+        }
         if (target == null)
             return;
 
@@ -49,50 +69,52 @@ public class TurretGeneral : MonoBehaviour
 
     private void OnMouseDrag()
     {
-
-        Vector3 newPosition = new Vector3(1f,1f,1f);
-        //Debug.Log(Input.mousePosition.x);
-
-
-        //Debug.Log(buildManager.MaxPoints.position);
-        Vector3 maxPoints = buildManager.MaxPoints.position;
-        Vector3 minPoints = buildManager.MinPoints.position;
-        Camera camera = buildManager.camera;
-
-        float zPos = 0f;
-        float xPos = 0f;
-
-        if (camera.WorldToScreenPoint(minPoints).x < Input.mousePosition.x)
+        if (!isPlaced)
         {
-            zPos = minPoints.z;
-        }
-        else if (camera.WorldToScreenPoint(maxPoints).x > Input.mousePosition.x)
-        {
-            zPos = maxPoints.z;
-        }
-        else
-        {
-            float percent = (Input.mousePosition.x - camera.WorldToScreenPoint(maxPoints).x) / (camera.WorldToScreenPoint(minPoints).x - camera.WorldToScreenPoint(maxPoints).x);
-            zPos = percent * (minPoints.z - maxPoints.z) + maxPoints.z;
-        }
-
-        if (camera.WorldToScreenPoint(minPoints).y > Input.mousePosition.y)
-        {
-            xPos = minPoints.x;
-        }
-        else if (camera.WorldToScreenPoint(maxPoints).y < Input.mousePosition.y)
-        {
-            xPos = maxPoints.x;
-        }
-        else
-        {
-            float percent = (Input.mousePosition.y - camera.WorldToScreenPoint(maxPoints).y) / (camera.WorldToScreenPoint(minPoints).y - camera.WorldToScreenPoint(maxPoints).y);
-            xPos = percent * (minPoints.x - maxPoints.x) + maxPoints.x;
-        }
+            Vector3 newPosition = new Vector3(1f, 1f, 1f);
+            //Debug.Log(Input.mousePosition.x);
 
 
+            //Debug.Log(buildManager.MaxPoints.position);
+            Vector3 maxPoints = buildManager.MaxPoints.position;
+            Vector3 minPoints = buildManager.MinPoints.position;
+            Camera camera = buildManager.camera;
 
-        transform.position = new Vector3(xPos, gameObject.transform.position.y, zPos);
+            float zPos = 0f;
+            float xPos = 0f;
+
+            if (camera.WorldToScreenPoint(minPoints).x < Input.mousePosition.x)
+            {
+                zPos = minPoints.z;
+            }
+            else if (camera.WorldToScreenPoint(maxPoints).x > Input.mousePosition.x)
+            {
+                zPos = maxPoints.z;
+            }
+            else
+            {
+                float percent = (Input.mousePosition.x - camera.WorldToScreenPoint(maxPoints).x) / (camera.WorldToScreenPoint(minPoints).x - camera.WorldToScreenPoint(maxPoints).x);
+                zPos = percent * (minPoints.z - maxPoints.z) + maxPoints.z;
+            }
+
+            if (camera.WorldToScreenPoint(minPoints).y > Input.mousePosition.y)
+            {
+                xPos = minPoints.x;
+            }
+            else if (camera.WorldToScreenPoint(maxPoints).y < Input.mousePosition.y)
+            {
+                xPos = maxPoints.x;
+            }
+            else
+            {
+                float percent = (Input.mousePosition.y - camera.WorldToScreenPoint(maxPoints).y) / (camera.WorldToScreenPoint(minPoints).y - camera.WorldToScreenPoint(maxPoints).y);
+                xPos = percent * (minPoints.x - maxPoints.x) + maxPoints.x;
+            }
+
+
+
+            transform.position = new Vector3(xPos, gameObject.transform.position.y, zPos);
+        }
     }
 
     private void OnMouseDown()
@@ -147,7 +169,30 @@ public class TurretGeneral : MonoBehaviour
             bullet.seek(target, damage, explosionRadius);
         }
     }
+
+    void SlowEnemies()
+    {
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag(enemyTag);
+        foreach (GameObject enemy in enemies)
+        {
+            if (Vector3.Distance(transform.position, enemy.transform.position) < range)
+            {
+                Enemy curr = enemy.GetComponent<Enemy>();
+                curr.takeDamage(damage);
+                curr.Slow(slowRate);
+                curr.health -= damage;
+            }
+        }
+    }
+
+
     private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, range);
+    }
+
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, range);

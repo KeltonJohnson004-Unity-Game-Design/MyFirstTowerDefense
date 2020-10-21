@@ -25,7 +25,7 @@ public class EnemyMovement : MonoBehaviour
         {
             GetDirection();
         }
-        if (Vector3.Distance(target.position, transform.position) <= 0.15f)
+        if (Vector3.Distance(target.position, transform.position) <= 0.2f)
         {
             GetNextTarget();
         }
@@ -67,4 +67,6 @@ public class EnemyMovement : MonoBehaviour
     {
         this.target = target;
     }
+
+
 }
